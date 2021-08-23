@@ -23,14 +23,14 @@ def ipm_from_parameters(image, xyz, K, RT, interpolation_fn):
     pixel_coords = perspective(xyz, P, TARGET_H, TARGET_W)
     image2 = interpolation_fn(image, pixel_coords)
     return image2.astype(np.uint8)
-
+'''
 def ipm_from_opencv(image, source_points, target_points):
     # Compute projection matrix
     M = cv2.getPerspectiveTransform(source_points, target_points)
     # Warp the image
     warped = cv2.warpPerspective(image, M, (TARGET_W, TARGET_H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT,borderValue=0)
     return warped
-
+'''
 def warp(pitch):
     # Derived method
     plane = Plane(0, -40, 0, 0, 0, 0, TARGET_H, TARGET_W, 0.1)
@@ -71,6 +71,7 @@ def get_lines():
     canny_out = cv2.Canny(blur_gray, low_threshold, high_threshold)
     cv2.imwrite('canny_out.png',canny_out)
     
+    #find lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 250)
     for line in lines:
         rho,theta = line[0]
@@ -89,6 +90,8 @@ def get_lines():
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
         m.add((y2 - y1)/(x2-x1))
 
+    cv2.namedWindow("image", cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty("image",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
     cv2.imshow('image', threshold_filter_gray)
     cv2.imwrite('lines.png', threshold_filter_gray)
     print(m)
@@ -109,21 +112,19 @@ if __name__ == '__main__':
         filter_out_dark_pixels()
         sleep(0.1)
         m = get_lines()        
-        m.remove("")
-        
+        #m.remove("")        
         print(m)
 
-        if(len(m) == 2):
-            diff = abs(list(m)[0] - list(m)[1])            
-            print("diff : " + str(diff))
+        #if(len(m) == 2):
+            #diff = abs(list(m)[0] - list(m)[1])            
+            #print("diff : " + str(diff))
             #if(diff_min > diff ):
             #    diff_min = diff
             #else:
             #    break
+        #print()
 
-        print()
-
-        pitch = pitch + 0.0005
+        pitch = pitch + 0.001
         json_object['pitch'] = pitch
         a_file = open("camera.json", "w")
         json.dump(json_object, a_file)
