@@ -71,6 +71,7 @@ def get_lines():
     canny_out = cv2.Canny(blur_gray, low_threshold, high_threshold)
     cv2.imwrite('canny_out.png',canny_out)
     
+    #get lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 250)
     for line in lines:
         rho,theta = line[0]
@@ -87,6 +88,7 @@ def get_lines():
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 1)
         print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
 
+    #find duplicate lines
     lineCount = len(det_lines)
     print("\nlineCount: " + str(lineCount))
     if(lineCount >= 2):
@@ -108,24 +110,24 @@ def get_lines():
                 j = j + 1
             i = i + 1
     
+    #remove duplicate lines
     print("rm_lines" + str(rm_lines))
     while len(rm_lines) > 0:
         det_lines.pop(rm_lines[0])
         rm_lines.pop(0)
         rm_lines = [x - 1 for x in rm_lines]
-        print("rm_lines" + str(rm_lines))        
+        print("rm_lines" + str(rm_lines))
 
-
+    #draw plot
     for i in range(len(det_lines)):
         cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 1)
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('image', 900, 900)
     cv2.imshow('image', threshold_filter_gray)
     cv2.imwrite('lines.png', threshold_filter_gray)
 
-    
     lineCount = len(det_lines)
-    print("\nlineCount 2: " + str(lineCount) + "\n")
     if(lineCount >= 2):
         i = 0
         while i<lineCount:  
@@ -134,11 +136,16 @@ def get_lines():
                 print(str(i) + " " + str(j))                
                 print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
                 print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
+                dist_start = distance(det_lines[i].x1, det_lines[i].y1, det_lines[j].x1, det_lines[j].y1)
+                dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
+                print("d1 " + str(dist_start))
+                print("d2 " + str(dist_end))
+                if(abs(dist_start - dist_end) < 5):
+                    return 1
                 j = j + 1
             i = i + 1
-    
     print("\n***************************************\n")
-    k = cv2.waitKey(0)
+    return 0  
 
 
 if __name__ == '__main__':
@@ -151,26 +158,20 @@ if __name__ == '__main__':
     while True:
         print("pitch: " + str(pitch))
         warp(pitch)
-        #sleep(0.1)
         filter_out_dark_pixels()
-        #sleep(0.1)
-        m = get_lines()        
-        #m.remove("")        
-        #print(m)
 
-        #if(len(m) == 2):
-            #diff = abs(list(m)[0] - list(m)[1])            
-            #print("diff : " + str(diff))
-            #if(diff_min > diff ):
-            #    diff_min = diff
-            #else:
-            #    break
-        #print()
-
+        if(get_lines() == 1):
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            break
+        else:
+            cv2.waitKey(0)
+        
         pitch = pitch + quanta
         json_object['pitch'] = pitch
         a_file = open("camera.json", "w")
         json.dump(json_object, a_file)
-        a_file.close()      
+        a_file.close()
 
-        #sleep(0.1)
+    print("\n\n\nexit")   
+
