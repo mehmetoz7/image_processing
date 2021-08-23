@@ -72,7 +72,11 @@ def get_lines():
     cv2.imwrite('canny_out.png',canny_out)
     
     #get lines
-    lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 250)
+    lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 240)
+    
+    if len(lines) == 0:
+        return 0
+
     for line in lines:
         rho,theta = line[0]
         a = np.cos(theta)
@@ -86,37 +90,37 @@ def get_lines():
         ll = myLine(x1, y1, x2, y2)
         det_lines.append(ll)
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 1)
-        print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
+        #print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
 
     #find duplicate lines
     lineCount = len(det_lines)
-    print("\nlineCount: " + str(lineCount))
+    #print("\nlineCount: " + str(lineCount))
     if(lineCount >= 2):
         i = 0
         while i<lineCount:  
             j = i + 1
             while j<lineCount:
-                print(str(i) + " " + str(j))                
-                print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
-                print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
+                #print(str(i) + " " + str(j))                
+                #print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+                #print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
                 dist_start = distance(det_lines[i].x1, det_lines[i].y1, det_lines[j].x1, det_lines[j].y1)
                 dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
-                print("d1 " + str(dist_start))
-                print("d2 " + str(dist_end))
+                #print("d1 " + str(dist_start))
+                #print("d2 " + str(dist_end))
                 if(dist_start < 30 and dist_end < 30):
-                    print("****remove " + str(i))
+                    #print("****remove " + str(i))
                     if(i not in rm_lines):
                         rm_lines.append(i)
                 j = j + 1
             i = i + 1
     
     #remove duplicate lines
-    print("rm_lines" + str(rm_lines))
+    #print("rm_lines" + str(rm_lines))
     while len(rm_lines) > 0:
         det_lines.pop(rm_lines[0])
         rm_lines.pop(0)
         rm_lines = [x - 1 for x in rm_lines]
-        print("rm_lines" + str(rm_lines))
+        #print("rm_lines" + str(rm_lines))
 
     #draw plot
     for i in range(len(det_lines)):
@@ -133,18 +137,18 @@ def get_lines():
         while i<lineCount:  
             j = i + 1
             while j<lineCount:
-                print(str(i) + " " + str(j))                
-                print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
-                print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
+                #print(str(i) + " " + str(j))                
+                #print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+                #print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
                 dist_start = distance(det_lines[i].x1, det_lines[i].y1, det_lines[j].x1, det_lines[j].y1)
                 dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
-                print("d1 " + str(dist_start))
-                print("d2 " + str(dist_end))
-                if(abs(dist_start - dist_end) < 5):
+                #print("d1 " + str(dist_start))
+                #print("d2 " + str(dist_end))
+                if(abs(dist_start - dist_end) < 1):
                     return 1
                 j = j + 1
             i = i + 1
-    print("\n***************************************\n")
+    #print("\n***************************************\n")
     return 0  
 
 
@@ -165,7 +169,7 @@ if __name__ == '__main__':
             cv2.destroyAllWindows()
             break
         else:
-            cv2.waitKey(0)
+            cv2.waitKey(1)
         
         pitch = pitch + quanta
         json_object['pitch'] = pitch
