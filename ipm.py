@@ -16,7 +16,8 @@ from utils import perspective, Plane, load_camera_params, bilinear_sampler, warp
 image = cv2.cvtColor(cv2.imread('1.png'), cv2.COLOR_BGR2RGB)
 interpolation_fn = bilinear_sampler  # or warped
 TARGET_H, TARGET_W = 800, 800
-quanta = 0.001
+INCREMENT_COEFF = 0.001
+PARALLELISM_TOLERANCE = 1 #comparison level for detecting paralelism 
 
 def ipm_from_parameters(image, xyz, K, RT, interpolation_fn):
     # Flip y points positive upwards
@@ -89,7 +90,7 @@ def get_lines():
         y2 = int(y0 - 1000 * (a)) # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
         ll = myLine(x1, y1, x2, y2)
         det_lines.append(ll)
-        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 1)
+        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 3)
         #print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
 
     #find duplicate lines
@@ -124,7 +125,7 @@ def get_lines():
 
     #draw plot
     for i in range(len(det_lines)):
-        cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 1)
+        cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 3)
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.resizeWindow('image', 900, 900)
@@ -144,8 +145,7 @@ def get_lines():
                 dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
                 #print("d1 " + str(dist_start))
                 #print("d2 " + str(dist_end))
-                if(abs(dist_start - dist_end) < 1
-                ):
+                if(abs(dist_start - dist_end) < PARALLELISM_TOLERANCE):
                     return 1
                 j = j + 1
             i = i + 1
@@ -172,7 +172,7 @@ if __name__ == '__main__':
         else:
             cv2.waitKey(1)
         
-        pitch = pitch + quanta
+        pitch = pitch + INCREMENT_COEFF
         json_object['pitch'] = pitch
         a_file = open("camera.json", "w")
         json.dump(json_object, a_file)
