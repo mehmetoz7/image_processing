@@ -73,7 +73,7 @@ def get_lines():
     cv2.imwrite('canny_out.png',canny_out)
     
     #get lines
-    lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 240)
+    lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 245)
     
     if len(lines) == 0:
         return 0
@@ -90,7 +90,7 @@ def get_lines():
         y2 = int(y0 - 1000 * (a)) # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
         ll = myLine(x1, y1, x2, y2)
         det_lines.append(ll)
-        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 3)
+        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 2)
         #print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
 
     #find duplicate lines
@@ -125,7 +125,7 @@ def get_lines():
 
     #draw plot
     for i in range(len(det_lines)):
-        cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 3)
+        cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 2)
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.resizeWindow('image', 900, 900)
