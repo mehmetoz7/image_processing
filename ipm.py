@@ -16,7 +16,8 @@ from utils import perspective, Plane, load_camera_params, bilinear_sampler, warp
 image = cv2.cvtColor(cv2.imread('1.png'), cv2.COLOR_BGR2RGB)
 interpolation_fn = bilinear_sampler  # or warped
 TARGET_H, TARGET_W = 800, 800
-INCREMENT_COEFF = 0.001
+INCREMENT_COEFF = 0.0005
+LINE_REMOVING_COEFF = 30
 PARALLELISM_TOLERANCE = 1 #comparison level for detecting paralelism 
 
 def ipm_from_parameters(image, xyz, K, RT, interpolation_fn):
@@ -75,7 +76,7 @@ def get_lines():
     #get lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 245)
     
-    if len(lines) == 0:
+    if len(lines) == 0: #bug fix for crash
         return 0
 
     for line in lines:
@@ -108,7 +109,7 @@ def get_lines():
                 dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
                 #print("d1 " + str(dist_start))
                 #print("d2 " + str(dist_end))
-                if(dist_start < 30 and dist_end < 30):
+                if(dist_start < LINE_REMOVING_COEFF and dist_end < LINE_REMOVING_COEFF):
                     #print("****remove " + str(i))
                     if(i not in rm_lines):
                         rm_lines.append(i)
