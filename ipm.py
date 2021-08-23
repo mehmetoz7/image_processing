@@ -144,7 +144,8 @@ def get_lines():
                 dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
                 #print("d1 " + str(dist_start))
                 #print("d2 " + str(dist_end))
-                if(abs(dist_start - dist_end) < 1):
+                if(abs(dist_start - dist_end) < 1
+                ):
                     return 1
                 j = j + 1
             i = i + 1
