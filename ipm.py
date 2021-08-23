@@ -33,7 +33,6 @@ def warp(pitch):
     plane = Plane(0, -40, 0, 0, 0, 0, TARGET_H, TARGET_W, 0.1)
     # Retrieve camera parameters
     extrinsic, intrinsic = load_camera_params('camera.json')
-
     # Apply perspective transformation
     warped1 = ipm_from_parameters(image, plane.xyz, intrinsic, extrinsic, interpolation_fn)
 
@@ -76,7 +75,7 @@ def get_lines():
     #get lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 245)
     
-    if len(lines) == 0: #bug fix for crash
+    if lines is None or len(lines) == 0: #bug fix for crash
         return 0
 
     for line in lines:
@@ -150,9 +149,7 @@ def get_lines():
                     return 1
                 j = j + 1
             i = i + 1
-    #print("\n***************************************\n")
     return 0  
-
 
 if __name__ == '__main__':
     a_file = open("camera.json", "r")
@@ -179,5 +176,5 @@ if __name__ == '__main__':
         json.dump(json_object, a_file)
         a_file.close()
 
-    print("\n\n\nexit")   
+    print("\n\n\nexit")
 
