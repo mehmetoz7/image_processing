@@ -6,6 +6,7 @@ import threading
 import logging
 import time
 
+from myLine import myLine
 from time import sleep
 from PIL import Image
 from pynput import keyboard
@@ -55,7 +56,7 @@ def filter_out_dark_pixels():
     im.save('threshold_filter_gray.png')
 
 def get_lines():
-    slope = {""}
+    det_lines = []
     threshold_filter_gray = cv2.imread('threshold_filter_gray.png')
     kernel_size = 5
     blur_gray = cv2.GaussianBlur(threshold_filter_gray,(kernel_size, kernel_size),0)
@@ -66,7 +67,7 @@ def get_lines():
     
     #find lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 250)
-    print("number of lines: " + str(len(lines)))
+    lineCount = len(lines)
 
     for line in lines:
         rho,theta = line[0]
@@ -82,19 +83,24 @@ def get_lines():
         x2 = int(x0 - 1000 * (-b))
         # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
         y2 = int(y0 - 1000 * (a))
-        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
-        print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(x2))
-        slope.add((y2 - y1)/(x2-x1))
 
+        ll = myLine(x1, y1, x2, y2)
+        det_lines.append(ll)
+
+        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
+        #print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(x2))
+        #slope.add((y2 - y1)/(x2-x1))        
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    #aaa = cv2.resize(threshold_filter_gray, (800, 800))
     cv2.imshow('image', threshold_filter_gray)
-    cv2.imwrite('lines.png', threshold_filter_gray)    
-    
-    #print(slope)
+    cv2.imwrite('lines.png', threshold_filter_gray)
+
+    for i in range(lineCount):
+        print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+
+
     k = cv2.waitKey(0)
-    return slope
+    #return slope
 
 if __name__ == '__main__':
     a_file = open("camera.json", "r")
