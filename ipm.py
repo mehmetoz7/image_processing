@@ -23,14 +23,7 @@ def ipm_from_parameters(image, xyz, K, RT, interpolation_fn):
     pixel_coords = perspective(xyz, P, TARGET_H, TARGET_W)
     image2 = interpolation_fn(image, pixel_coords)
     return image2.astype(np.uint8)
-'''
-def ipm_from_opencv(image, source_points, target_points):
-    # Compute projection matrix
-    M = cv2.getPerspectiveTransform(source_points, target_points)
-    # Warp the image
-    warped = cv2.warpPerspective(image, M, (TARGET_W, TARGET_H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT,borderValue=0)
-    return warped
-'''
+
 def warp(pitch):
     # Derived method
     plane = Plane(0, -40, 0, 0, 0, 0, TARGET_H, TARGET_W, 0.1)
@@ -62,7 +55,7 @@ def filter_out_dark_pixels():
     im.save('threshold_filter_gray.png')
 
 def get_lines():
-    m = {""}
+    slope = {""}
     threshold_filter_gray = cv2.imread('threshold_filter_gray.png')
     kernel_size = 5
     blur_gray = cv2.GaussianBlur(threshold_filter_gray,(kernel_size, kernel_size),0)
@@ -73,6 +66,8 @@ def get_lines():
     
     #find lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 250)
+    print("number of lines: " + str(len(lines)))
+
     for line in lines:
         rho,theta = line[0]
         a = np.cos(theta)
@@ -88,23 +83,18 @@ def get_lines():
         # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
         y2 = int(y0 - 1000 * (a))
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
-        m.add((y2 - y1)/(x2-x1))
+        print(str(x1)+ " " + str(y1)+ " " + str(x2)+ " " + str(x2)+ " ")
+        slope.add((y2 - y1)/(x2-x1))
 
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    aaa = cv2.resize(threshold_filter_gray, (800, 800))
-    cv2.imshow('image', aaa)
-    cv2.imwrite('lines.png', aaa)    
-    
-    '''
-    cv2.namedWindow("image", cv2.WND_PROP_FULLSCREEN)
-    cv2.setWindowProperty("image",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+    #aaa = cv2.resize(threshold_filter_gray, (800, 800))
     cv2.imshow('image', threshold_filter_gray)
-    cv2.imwrite('lines.png', threshold_filter_gray)
-    '''
-    print(m)
+    cv2.imwrite('lines.png', threshold_filter_gray)    
+    
+    #print(slope)
     k = cv2.waitKey(0)
-    return m
+    return slope
 
 if __name__ == '__main__':
     a_file = open("camera.json", "r")
@@ -121,7 +111,7 @@ if __name__ == '__main__':
         #sleep(0.1)
         m = get_lines()        
         #m.remove("")        
-        print(m)
+        #print(m)
 
         #if(len(m) == 2):
             #diff = abs(list(m)[0] - list(m)[1])            
@@ -138,4 +128,4 @@ if __name__ == '__main__':
         json.dump(json_object, a_file)
         a_file.close()      
 
-        sleep(0.1)
+        #sleep(0.1)
