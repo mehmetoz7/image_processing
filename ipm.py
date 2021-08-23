@@ -83,7 +83,7 @@ def get_lines():
         # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
         y2 = int(y0 - 1000 * (a))
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
-        print(str(x1)+ " " + str(y1)+ " " + str(x2)+ " " + str(x2)+ " ")
+        print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(x2))
         slope.add((y2 - y1)/(x2-x1))
 
     
