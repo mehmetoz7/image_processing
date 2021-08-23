@@ -90,10 +90,18 @@ def get_lines():
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
         m.add((y2 - y1)/(x2-x1))
 
+    
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    aaa = cv2.resize(threshold_filter_gray, (800, 800))
+    cv2.imshow('image', aaa)
+    cv2.imwrite('lines.png', aaa)    
+    
+    '''
     cv2.namedWindow("image", cv2.WND_PROP_FULLSCREEN)
     cv2.setWindowProperty("image",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
     cv2.imshow('image', threshold_filter_gray)
     cv2.imwrite('lines.png', threshold_filter_gray)
+    '''
     print(m)
     k = cv2.waitKey(0)
     return m
@@ -108,9 +116,9 @@ if __name__ == '__main__':
     while True:
         print("pitch: " + str(pitch))
         warp(pitch)
-        sleep(0.1)
+        #sleep(0.1)
         filter_out_dark_pixels()
-        sleep(0.1)
+        #sleep(0.1)
         m = get_lines()        
         #m.remove("")        
         print(m)
@@ -131,4 +139,3 @@ if __name__ == '__main__':
         a_file.close()      
 
         sleep(0.1)
-        
