@@ -122,7 +122,7 @@ if __name__ == '__main__':
             #    break
         #print()
 
-        pitch = pitch + 0.001
+        pitch = pitch + quanta
         json_object['pitch'] = pitch
         a_file = open("camera.json", "w")
         json.dump(json_object, a_file)
