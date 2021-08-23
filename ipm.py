@@ -5,6 +5,7 @@ import json
 import threading
 import logging
 import time
+import math
 
 from myLine import myLine
 from time import sleep
@@ -55,8 +56,13 @@ def filter_out_dark_pixels():
 
     im.save('threshold_filter_gray.png')
 
+def distance(x1, y1, x2, y2):
+    d = math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+    return d
+
 def get_lines():
     det_lines = []
+    rm_lines = []
     threshold_filter_gray = cv2.imread('threshold_filter_gray.png')
     kernel_size = 5
     blur_gray = cv2.GaussianBlur(threshold_filter_gray,(kernel_size, kernel_size),0)
@@ -65,45 +71,75 @@ def get_lines():
     canny_out = cv2.Canny(blur_gray, low_threshold, high_threshold)
     cv2.imwrite('canny_out.png',canny_out)
     
-    #find lines
     lines = cv2.HoughLines(canny_out, 1, np.pi / 180, 250)
-    lineCount = len(lines)
-
     for line in lines:
         rho,theta = line[0]
         a = np.cos(theta)
         b = np.sin(theta)
         x0 = a * rho
         y0 = b * rho
-        # x1 stores the rounded off value of (r * cos(theta) - 1000 * sin(theta))
-        x1 = int(x0 + 1000 * (-b))
-        # y1 stores the rounded off value of (r * sin(theta)+ 1000 * cos(theta))
-        y1 = int(y0 + 1000 * (a))
-        # x2 stores the rounded off value of (r * cos(theta)+ 1000 * sin(theta))
-        x2 = int(x0 - 1000 * (-b))
-        # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
-        y2 = int(y0 - 1000 * (a))
-
+        x1 = int(x0 + 1000 * (-b)) # x1 stores the rounded off value of (r * cos(theta) - 1000 * sin(theta))
+        y1 = int(y0 + 1000 * (a)) # y1 stores the rounded off value of (r * sin(theta)+ 1000 * cos(theta))
+        x2 = int(x0 - 1000 * (-b)) # x2 stores the rounded off value of (r * cos(theta)+ 1000 * sin(theta))
+        y2 = int(y0 - 1000 * (a)) # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
         ll = myLine(x1, y1, x2, y2)
         det_lines.append(ll)
-
-        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
+        cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (255, 0, 0), 1)
         print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
-        #slope.add((y2 - y1)/(x2-x1))        
+
+    lineCount = len(det_lines)
+    print("\nlineCount: " + str(lineCount))
+    if(lineCount >= 2):
+        i = 0
+        while i<lineCount:  
+            j = i + 1
+            while j<lineCount:
+                print(str(i) + " " + str(j))                
+                print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+                print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
+                dist_start = distance(det_lines[i].x1, det_lines[i].y1, det_lines[j].x1, det_lines[j].y1)
+                dist_end = distance(det_lines[i].x2, det_lines[i].y2, det_lines[j].x2, det_lines[j].y2)
+                print("d1 " + str(dist_start))
+                print("d2 " + str(dist_end))
+                if(dist_start < 30 and dist_end < 30):
+                    print("****remove " + str(i))
+                    if(i not in rm_lines):
+                        rm_lines.append(i)
+                j = j + 1
+            i = i + 1
+    
+    print("rm_lines" + str(rm_lines))
+    while len(rm_lines) > 0:
+        det_lines.pop(rm_lines[0])
+        rm_lines.pop(0)
+        rm_lines = [x - 1 for x in rm_lines]
+        print("rm_lines" + str(rm_lines))        
+
+
+    for i in range(len(det_lines)):
+        cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 1)
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image', threshold_filter_gray)
     cv2.imwrite('lines.png', threshold_filter_gray)
 
-    i = 0
-    while i<lineCount:
-        print(str(i) + " " + str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + 
-            str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
-        i = i + 1
-
-
+    
+    lineCount = len(det_lines)
+    print("\nlineCount 2: " + str(lineCount) + "\n")
+    if(lineCount >= 2):
+        i = 0
+        while i<lineCount:  
+            j = i + 1
+            while j<lineCount:
+                print(str(i) + " " + str(j))                
+                print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+                print(str(det_lines[j].x1) + "\t" + str(det_lines[j].y1)+ "\t" + str(det_lines[j].x2)+ "\t" + str(det_lines[j].y2))
+                j = j + 1
+            i = i + 1
+    
+    print("\n***************************************\n")
     k = cv2.waitKey(0)
-    #return slope
+
 
 if __name__ == '__main__':
     a_file = open("camera.json", "r")
