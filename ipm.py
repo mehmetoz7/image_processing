@@ -88,15 +88,18 @@ def get_lines():
         det_lines.append(ll)
 
         cv2.line(threshold_filter_gray, (x1, y1), (x2, y2), (0, 0, 255), 1)
-        #print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(x2))
+        print("x1: " + str(x1) + "\ty1:" + str(y1)+ "\tx2:" + str(x2)+ "\ty2:" + str(y2))
         #slope.add((y2 - y1)/(x2-x1))        
     
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
     cv2.imshow('image', threshold_filter_gray)
     cv2.imwrite('lines.png', threshold_filter_gray)
 
-    for i in range(lineCount):
-        print(str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+    i = 0
+    while i<lineCount:
+        print(str(i) + " " + str(det_lines[i].x1) + "\t" + str(det_lines[i].y1)+ "\t" + 
+            str(det_lines[i].x2)+ "\t" + str(det_lines[i].y2))
+        i = i + 1
 
 
     k = cv2.waitKey(0)
