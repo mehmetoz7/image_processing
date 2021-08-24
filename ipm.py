@@ -18,6 +18,7 @@ interpolation_fn = bilinear_sampler  # or warped
 TARGET_H, TARGET_W = 800, 800
 INCREMENT_COEFF = 0.0005
 LINE_REMOVING_COEFF = 30
+DARKNESS_THRESHOLD_COEFF = 150
 PARALLELISM_TOLERANCE = 1 #comparison level for detecting paralelism 
 
 def ipm_from_parameters(image, xyz, K, RT, interpolation_fn):
@@ -46,13 +47,13 @@ def warp(pitch):
 
     cv2.imwrite('gray.png', gray)    
 
-def filter_out_dark_pixels():
+def remove_dark_pixels():
     im = Image.open('gray.png')
     px = im.load()
 
     for i in range(im.width): 
        for j in range(im.height):    
-           if (px[i,j] < 150):
+           if (px[i,j] < DARKNESS_THRESHOLD_COEFF):
                px[i,j] = 0
 
     im.save('threshold_filter_gray.png')
@@ -127,9 +128,7 @@ def get_lines():
     for i in range(len(det_lines)):
         cv2.line(threshold_filter_gray, (det_lines[i].x1, det_lines[i].y1), (det_lines[i].x2, det_lines[i].y2), (0, 0, 255), 2)
     
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    cv2.resizeWindow('image', 900, 900)
-    cv2.imshow('image', threshold_filter_gray)
+    cv2.imshow('image', threshold_filter_gray)    
     cv2.imwrite('lines.png', threshold_filter_gray)
 
     lineCount = len(det_lines)
@@ -157,11 +156,13 @@ if __name__ == '__main__':
     pitch = json_object['pitch']
     a_file.close()
 
-    diff_min = 1000
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('image', 900, 900)
+
     while True:
         print("pitch: " + str(pitch))
         warp(pitch)
-        filter_out_dark_pixels()
+        remove_dark_pixels()
 
         if(get_lines() == 1):
             cv2.waitKey(0)
