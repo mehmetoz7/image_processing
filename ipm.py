@@ -13,7 +13,7 @@ from PIL import Image
 from pynput import keyboard
 from utils import perspective, Plane, load_camera_params, bilinear_sampler, warped
 
-image = cv2.cvtColor(cv2.imread('1.png'), cv2.COLOR_BGR2RGB)
+image = cv2.cvtColor(cv2.imread('resource/1.png'), cv2.COLOR_BGR2RGB)
 interpolation_fn = bilinear_sampler  # or warped
 TARGET_H, TARGET_W = 800, 800
 INCREMENT_COEFF = 0.0005
